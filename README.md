@@ -1,4 +1,4 @@
-# MoneyTrack Backend
+# AppFree Backend
 
 A backend application for MoneyTrack using Express.js, PostgreSQL, and TypeORM.
 
