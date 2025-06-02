@@ -2,6 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, Up
 import { Transaction } from "./Transaction";
 import { Category } from "./Category";
 import { User } from "./User";
+import { MonthlyBudget } from "./MonthlyBudget";
+import { DailyTransaction } from "./DailyTransaction";
 
 /**
  * Enum for marital status
@@ -80,6 +82,12 @@ export class Client {
 
   @OneToMany(() => Category, category => category.client)
   categories: Category[];
+
+  @OneToMany(() => MonthlyBudget, monthlyBudget => monthlyBudget.client)
+  monthlyBudgets: MonthlyBudget[];
+
+  @OneToMany(() => DailyTransaction, dailyTransaction => dailyTransaction.client)
+  dailyTransactions: DailyTransaction[];
 
   @CreateDateColumn()
   createdAt: Date;

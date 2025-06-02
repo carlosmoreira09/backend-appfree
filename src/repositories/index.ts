@@ -4,6 +4,8 @@ import transactionRepository, * as transactionRepo from './transactionRepository
 import clientRepository, * as clientRepo from './clientRepository';
 import roleRepository, * as roleRepo from './roleRepository';
 import authRepository, * as authRepo from './authRepository';
+import monthlyBudgetRepository, * as monthlyBudgetRepo from './monthlyBudgetRepository';
+import dailyTransactionRepository, * as dailyTransactionRepo from './dailyTransactionRepository';
 
 // Export repositories
 export {
@@ -12,7 +14,9 @@ export {
   transactionRepository,
   clientRepository,
   roleRepository,
-  authRepository
+  authRepository,
+  monthlyBudgetRepository,
+  dailyTransactionRepository
 };
 
 // Export user repository functions
@@ -47,7 +51,9 @@ export const {
 // Export client repository functions
 export const {
   findAllClients,
+  findAllClientsPaginated,
   findClientsByManager,
+  findClientsByManagerPaginated,
   findClientById,
   findClientByEmail,
   findClientByCpf,
@@ -78,3 +84,27 @@ export const {
   deleteAuth,
   updateLastLogin
 } = authRepo;
+
+// Export monthly budget repository functions
+export const {
+  findMonthlyBudgetsByClient,
+  findMonthlyBudgetById,
+  findMonthlyBudgetByYearAndMonth,
+  createMonthlyBudget,
+  updateMonthlyBudget,
+  deleteMonthlyBudget
+} = monthlyBudgetRepo;
+
+// Export daily transaction repository functions
+export const {
+  findDailyTransactionsByClient,
+  findDailyTransactionsByDate,
+  findDailyTransactionsByMonth,
+  findDailyTransactionsByMonthlyBudget,
+  findDailyTransactionById,
+  createDailyTransaction,
+  updateDailyTransaction,
+  deleteDailyTransaction,
+  getDailyTransactionsSumByDate,
+  getDailyTransactionsSumByMonth
+} = dailyTransactionRepo;

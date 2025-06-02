@@ -6,6 +6,8 @@ import { Auth, AuthType } from "../entities/Auth";
 import { Category } from "../entities/Category";
 import { Transaction, TransactionType } from "../entities/Transaction";
 import { MaritalStatus } from "../entities/Client";
+import { MonthlyBudget } from "../entities/MonthlyBudget";
+import { DailyTransaction } from "../entities/DailyTransaction";
 import * as bcrypt from "bcryptjs";
 import { LoggerService } from "./LoggerService";
 
@@ -49,24 +51,22 @@ export class DatabaseService {
             await roleRepository.save([adminRole, managerRole, clientRole]);
             this.logger.info("Roles created");
 
-            // Create a demo admin user with hashed password
-            const hashedPassword = await bcrypt.hash("admin123", 10);
+            // Create admin user
             const adminUser = userRepository.create({
                 name: "Admin User",
                 email: "admin@example.com",
-                password: hashedPassword,
+                password: await bcrypt.hash("admin123", 10),
                 role: adminRole
             });
 
             await userRepository.save(adminUser);
             this.logger.info("Admin user created");
 
-            // Create a demo manager user
-            const managerPassword = await bcrypt.hash("manager123", 10);
+            // Create manager user
             const managerUser = userRepository.create({
                 name: "Manager User",
                 email: "manager@example.com",
-                password: managerPassword,
+                password: await bcrypt.hash("manager123", 10),
                 role: managerRole
             });
 
@@ -75,21 +75,22 @@ export class DatabaseService {
 
             // Create auth records for users
             const authRepository = AppDataSource.getRepository(Auth);
-            const adminAuth = authRepository.create({
-                email: adminUser.email,
-                password: hashedPassword,
-                type: AuthType.USER,
-                userId: adminUser.id
-            });
+            const userAuths = authRepository.create([
+                {
+                    email: adminUser.email,
+                    password: adminUser.password,
+                    type: AuthType.USER,
+                    userId: adminUser.id
+                },
+                {
+                    email: managerUser.email,
+                    password: managerUser.password,
+                    type: AuthType.USER,
+                    userId: managerUser.id
+                }
+            ]);
 
-            const managerAuth = authRepository.create({
-                email: managerUser.email,
-                password: managerPassword,
-                type: AuthType.USER,
-                userId: managerUser.id
-            });
-
-            await authRepository.save([adminAuth, managerAuth]);
+            await authRepository.save(userAuths);
             this.logger.info("Auth records created for users");
 
             // Create a demo client
@@ -99,7 +100,7 @@ export class DatabaseService {
                 email: "client@example.com",
                 cpf: "123.456.789-00",
                 phone: "+1234567890",
-                birthday: new Date(1990, 0, 1),
+                birthday: new Date("1990-01-01"),
                 age: 35,
                 salary: 5000,
                 address: "123 Main St",
@@ -108,17 +109,17 @@ export class DatabaseService {
                 zipCode: "12345-678",
                 complement: "Apt 101",
                 maritalStatus: MaritalStatus.SINGLE,
-                manager: managerUser
+                manager: managerUser,
+                managerId: managerUser.id
             });
 
             await clientRepository.save(demoClient);
             this.logger.info("Demo client created");
 
             // Create auth record for client
-            const clientPassword = await bcrypt.hash("client123", 10);
             const clientAuth = authRepository.create({
                 email: demoClient.email,
-                password: clientPassword,
+                password: await bcrypt.hash("client123", 10),
                 type: AuthType.CLIENT,
                 clientId: demoClient.id
             });
@@ -248,9 +249,86 @@ export class DatabaseService {
             await transactionRepository.save(transactions);
             this.logger.info("Demo transactions created");
 
+            // Create a monthly budget for the current month
+            const monthlyBudgetRepository = AppDataSource.getRepository(MonthlyBudget);
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const budgetAmount = 3000; // 60% of salary
+            const isPercentage = true;
+            const actualBudgetAmount = demoClient.salary * 0.6;
+            const dailyBudget = actualBudgetAmount / daysInMonth;
+            
+            const monthlyBudget = monthlyBudgetRepository.create({
+                year: currentYear,
+                month: currentMonth + 1, // JavaScript months are 0-indexed
+                monthlySalary: demoClient.salary,
+                budgetAmount: 60, // 60%
+                isPercentage: true,
+                dailyBudget: dailyBudget,
+                remainingBalance: actualBudgetAmount,
+                daysInMonth: daysInMonth,
+                client: demoClient,
+                clientId: demoClient.id
+            });
+
+            await monthlyBudgetRepository.save(monthlyBudget);
+            this.logger.info("Demo monthly budget created");
+
+            // Create some daily transactions
+            const dailyTransactionRepository = AppDataSource.getRepository(DailyTransaction);
+            let remainingBalance = actualBudgetAmount;
+            
+            const dailyTransactions = [
+                {
+                    description: "Lunch",
+                    amount: 15,
+                    type: TransactionType.EXPENSE,
+                    date: new Date(currentYear, currentMonth, now.getDate()),
+                    remainingBalanceAfterTransaction: remainingBalance - 15,
+                    client: demoClient,
+                    clientId: demoClient.id,
+                    category: categories[0], // Food & Dining
+                    categoryId: categories[0].id,
+                    monthlyBudget: monthlyBudget,
+                    monthlyBudgetId: monthlyBudget.id
+                },
+                {
+                    description: "Coffee",
+                    amount: 5,
+                    type: TransactionType.EXPENSE,
+                    date: new Date(currentYear, currentMonth, now.getDate()),
+                    remainingBalanceAfterTransaction: remainingBalance - 15 - 5,
+                    client: demoClient,
+                    clientId: demoClient.id,
+                    category: categories[0], // Food & Dining
+                    categoryId: categories[0].id,
+                    monthlyBudget: monthlyBudget,
+                    monthlyBudgetId: monthlyBudget.id
+                },
+                {
+                    description: "Bus Fare",
+                    amount: 3,
+                    type: TransactionType.EXPENSE,
+                    date: new Date(currentYear, currentMonth, now.getDate()),
+                    remainingBalanceAfterTransaction: remainingBalance - 15 - 5 - 3,
+                    client: demoClient,
+                    clientId: demoClient.id,
+                    category: categories[1], // Transportation
+                    categoryId: categories[1].id,
+                    monthlyBudget: monthlyBudget,
+                    monthlyBudgetId: monthlyBudget.id
+                }
+            ];
+
+            await dailyTransactionRepository.save(dailyTransactions);
+            this.logger.info("Demo daily transactions created");
+
+            // Update monthly budget remaining balance
+            monthlyBudget.remainingBalance = remainingBalance - 15 - 5 - 3;
+            await monthlyBudgetRepository.save(monthlyBudget);
+
             this.logger.info("Database seeding completed successfully");
         } catch (error) {
-            this.logger.error("Error seeding database:", error);
+            this.logger.error("Error during database seeding:", error);
             throw error;
         }
     }

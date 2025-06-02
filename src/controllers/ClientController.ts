@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { body, param, validationResult } from "express-validator";
+import { body, param, query, validationResult } from "express-validator";
 import { AppError } from "../middlewares/error.middleware";
 import { LoggerService } from "../services/LoggerService";
 import { ClientService } from "../services/ClientService";
@@ -66,19 +66,88 @@ export class ClientController {
     ];
 
     /**
-     * Get all clients
+     * Validation rules for listing clients
+     */
+    listValidation = [
+        query("page")
+            .optional()
+            .isInt({ min: 1 }).withMessage("Page must be a positive integer"),
+        query("limit")
+            .optional()
+            .isInt({ min: 1, max: 100 }).withMessage("Limit must be between 1 and 100"),
+        query("search")
+            .optional()
+            .isString().withMessage("Search must be a string"),
+        query("sortBy")
+            .optional()
+            .isIn(["name", "email", "createdAt"]).withMessage("Invalid sort field"),
+        query("sortOrder")
+            .optional()
+            .isIn(["ASC", "DESC"]).withMessage("Sort order must be ASC or DESC")
+    ];
+
+    /**
+     * Get all clients with pagination, filtering, and sorting
      */
     getAll = async (req: Request, res: Response): Promise<Response> => {
         try {
+            // Check for validation errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            // Parse query parameters
+            const page = req.query.page ? parseInt(req.query.page as string) : 1;
+            const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+            const search = req.query.search as string | undefined;
+            const sortBy = req.query.sortBy as string || "name";
+            const sortOrder = req.query.sortOrder as "ASC" | "DESC" || "ASC";
+            const isActive = req.query.isActive === "true" ? true : 
+                             req.query.isActive === "false" ? false : undefined;
+
             // Check if user is requesting their managed clients
             if (req.query.managed === 'true' && req.userId) {
-                const clients = await this.clientService.getClientsByManager(req.userId);
-                return res.status(200).json(clients);
+                const { clients, total } = await this.clientService.getClientsByManagerPaginated(
+                    req.userId,
+                    page,
+                    limit,
+                    search,
+                    sortBy,
+                    sortOrder,
+                    isActive
+                );
+                
+                return res.status(200).json({
+                    clients,
+                    pagination: {
+                        page,
+                        limit,
+                        total,
+                        totalPages: Math.ceil(total / limit)
+                    }
+                });
             }
             
             // Otherwise return all clients (admin only)
-            const clients = await this.clientService.getAllClients();
-            return res.status(200).json(clients);
+            const { clients, total } = await this.clientService.getAllClientsPaginated(
+                page,
+                limit,
+                search,
+                sortBy,
+                sortOrder,
+                isActive
+            );
+            
+            return res.status(200).json({
+                clients,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }
+            });
         } catch (error) {
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json({ message: error.message });
@@ -116,6 +185,80 @@ export class ClientController {
                 return res.status(error.statusCode).json({ message: error.message });
             }
             this.logger.error("Error fetching client:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    /**
+     * Create a new client with authentication
+     */
+    registerClient = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Check for validation errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const {
+                name,
+                email,
+                cpf,
+                phone,
+                birthday,
+                age,
+                salary,
+                address,
+                city,
+                state,
+                zipCode,
+                complement,
+                maritalStatus,
+                password,
+                managerId
+            } = req.body;
+
+            // Password is required for registration
+            if (!password) {
+                return res.status(400).json({ message: "Password is required for client registration" });
+            }
+
+            // Use authenticated user as manager if not specified
+            const effectiveManagerId = managerId || req.userId;
+            if (!effectiveManagerId) {
+                return res.status(400).json({ message: "Manager ID is required" });
+            }
+
+            // Create client
+            const client = await this.clientService.createClient({
+                name,
+                email,
+                cpf,
+                phone,
+                birthday,
+                age,
+                salary,
+                address,
+                city,
+                state,
+                zipCode,
+                complement,
+                maritalStatus,
+                managerId: effectiveManagerId
+            });
+
+            // Register client for authentication
+            await this.authService.registerClient(client, password);
+
+            return res.status(201).json({
+                message: "Client registered successfully",
+                client
+            });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error registering client:", error);
             return res.status(500).json({ message: "Internal server error" });
         }
     };
@@ -253,12 +396,52 @@ export class ClientController {
                 managerId
             });
 
-            return res.status(200).json(client);
+            return res.status(200).json({
+                message: "Client updated successfully",
+                client
+            });
         } catch (error) {
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json({ message: error.message });
             }
             this.logger.error("Error updating client:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    /**
+     * Deactivate a client
+     */
+    deactivate = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Check for validation errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const id = req.params.id;
+            
+            // Get current client
+            const currentClient = await this.clientService.getClientById(id);
+            
+            // Check if user is authorized to deactivate this client
+            if (req.userId && currentClient.managerId !== req.userId) {
+                return res.status(403).json({ message: "You are not authorized to deactivate this client" });
+            }
+
+            // Deactivate client
+            const client = await this.clientService.updateClient(id, { isActive: false });
+
+            return res.status(200).json({
+                message: "Client deactivated successfully",
+                client
+            });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error deactivating client:", error);
             return res.status(500).json({ message: "Internal server error" });
         }
     };

@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn } from "typeorm";
 import { Client } from "./Client";
 import { Transaction } from "./Transaction";
+import { DailyTransaction } from "./DailyTransaction";
 
 /**
  * Category entity
@@ -31,6 +32,9 @@ export class Category {
 
     @OneToMany(() => Transaction, transaction => transaction.category)
     transactions: Transaction[];
+
+    @OneToMany(() => DailyTransaction, dailyTransaction => dailyTransaction.category)
+    dailyTransactions: DailyTransaction[];
 
     @CreateDateColumn()
     createdAt: Date;

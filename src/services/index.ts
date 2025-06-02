@@ -6,6 +6,8 @@ import { CategoryService } from './CategoryService';
 import { TransactionService } from './TransactionService';
 import { ClientService } from './ClientService';
 import { RoleService } from './RoleService';
+import { MonthlyBudgetService } from './MonthlyBudgetService';
+import { DailyTransactionService } from './DailyTransactionService';
 
 export {
   AuthService,
@@ -15,5 +17,7 @@ export {
   CategoryService,
   TransactionService,
   ClientService,
-  RoleService
+  RoleService,
+  MonthlyBudgetService,
+  DailyTransactionService
 };

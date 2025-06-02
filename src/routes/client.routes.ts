@@ -10,10 +10,52 @@ const clientController = new ClientController();
 // None
 
 // Protected routes (require authentication)
-router.get("/", [authMiddleware, roleMiddleware([RoleType.ADMIN, RoleType.MANAGER])], clientController.getAll);
-router.get("/:id", [authMiddleware, ...clientController.idValidation], clientController.getById);
-router.post("/", [authMiddleware, roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]), ...clientController.clientValidation], clientController.create);
-router.put("/:id", [authMiddleware, ...clientController.idValidation, ...clientController.clientValidation], clientController.update);
-router.delete("/:id", [authMiddleware, roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]), ...clientController.idValidation], clientController.delete);
+// List clients with pagination, filtering, and sorting
+router.get("/", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]),
+    ...clientController.listValidation
+], clientController.getAll);
+
+// Get client by ID
+router.get("/:id", [
+    authMiddleware, 
+    ...clientController.idValidation
+], clientController.getById);
+
+// Register a client with authentication
+router.post("/register", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]), 
+    ...clientController.clientValidation
+], clientController.registerClient);
+
+// Create a client (without requiring password)
+router.post("/", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]), 
+    ...clientController.clientValidation
+], clientController.create);
+
+// Update a client
+router.put("/:id", [
+    authMiddleware, 
+    ...clientController.idValidation, 
+    ...clientController.clientValidation
+], clientController.update);
+
+// Deactivate a client
+router.patch("/:id/deactivate", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]), 
+    ...clientController.idValidation
+], clientController.deactivate);
+
+// Delete a client
+router.delete("/:id", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER]), 
+    ...clientController.idValidation
+], clientController.delete);
 
 export default router;

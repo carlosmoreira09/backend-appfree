@@ -12,6 +12,9 @@
     "migration:run": "npm run typeorm migration:run -- -d src/data-source.ts",
     "init:db": "ts-node src/scripts/init-db.ts",
     "seed:db": "ts-node src/scripts/seed-db.ts",
+    "change:role": "ts-node src/scripts/change-user-role.ts",
+    "run:migration": "ts-node src/scripts/run-migration.ts",
+    "seed:client-budget": "ts-node src/scripts/seed-client-budget.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

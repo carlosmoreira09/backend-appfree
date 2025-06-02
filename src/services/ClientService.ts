@@ -11,7 +11,9 @@ import {
   findClientByCpf,
   createClient,
   updateClient,
-  deleteClient
+  deleteClient,
+  findAllClientsPaginated,
+  findClientsByManagerPaginated
 } from "../repositories";
 
 export class ClientService {
@@ -25,6 +27,25 @@ export class ClientService {
       return await findAllClients();
     } catch (error) {
       this.logger.error("Error in getAllClients service:", error);
+      throw new AppError("Failed to get clients", 500);
+    }
+  }
+
+  /**
+   * Get all clients with pagination, filtering, and sorting
+   */
+  public async getAllClientsPaginated(
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    sortBy: string = "name",
+    sortOrder: "ASC" | "DESC" = "ASC",
+    isActive?: boolean
+  ): Promise<{ clients: Client[], total: number }> {
+    try {
+      return await findAllClientsPaginated(page, limit, search, sortBy, sortOrder, isActive);
+    } catch (error) {
+      this.logger.error("Error in getAllClientsPaginated service:", error);
       throw new AppError("Failed to get clients", 500);
     }
   }
@@ -46,6 +67,35 @@ export class ClientService {
         throw error;
       }
       this.logger.error(`Error in getClientsByManager service for manager ID ${managerId}:`, error);
+      throw new AppError("Failed to get clients", 500);
+    }
+  }
+
+  /**
+   * Get all clients for a manager with pagination, filtering, and sorting
+   */
+  public async getClientsByManagerPaginated(
+    managerId: string,
+    page: number = 1,
+    limit: number = 10,
+    search?: string,
+    sortBy: string = "name",
+    sortOrder: "ASC" | "DESC" = "ASC",
+    isActive?: boolean
+  ): Promise<{ clients: Client[], total: number }> {
+    try {
+      // Validate manager exists
+      const manager = await findUserById(managerId);
+      if (!manager) {
+        throw new AppError("Manager not found", 404);
+      }
+
+      return await findClientsByManagerPaginated(managerId, page, limit, search, sortBy, sortOrder, isActive);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      this.logger.error(`Error in getClientsByManagerPaginated service for manager ID ${managerId}:`, error);
       throw new AppError("Failed to get clients", 500);
     }
   }
