@@ -2,6 +2,7 @@ import { Client, MaritalStatus } from "../entities/Client";
 import { User } from "../entities/User";
 import { AppError } from "../middlewares/error.middleware";
 import { LoggerService } from "./LoggerService";
+import * as bcrypt from "bcryptjs";
 import {
   findUserById,
   findAllClients,
@@ -13,7 +14,9 @@ import {
   updateClient,
   deleteClient,
   findAllClientsPaginated,
-  findClientsByManagerPaginated
+  findClientsByManagerPaginated,
+  findAuthByEmail,
+  updateAuth
 } from "../repositories";
 
 export class ClientService {
@@ -223,6 +226,7 @@ export class ClientService {
       maritalStatus?: MaritalStatus;
       isActive?: boolean;
       managerId?: string;
+      password?: string;
     }
   ): Promise<Client> {
     try {
@@ -241,7 +245,8 @@ export class ClientService {
         complement,
         maritalStatus,
         isActive,
-        managerId
+        managerId,
+        password
       } = updateData;
 
       // Find client
@@ -288,6 +293,20 @@ export class ClientService {
       if (maritalStatus !== undefined) client.maritalStatus = maritalStatus;
       if (isActive !== undefined) client.isActive = isActive;
       if (manager) client.manager = manager;
+
+      // Update password if provided
+      if (password) {
+        // Find auth record for this client
+        const auth = await findAuthByEmail(client.email, true);
+        if (auth) {
+          // Hash the new password
+          const hashedPassword = await bcrypt.hash(password, 10);
+          
+          // Update auth record with new password
+          auth.password = hashedPassword;
+          await updateAuth(auth);
+        }
+      }
 
       // Save updated client
       return await updateClient(client);

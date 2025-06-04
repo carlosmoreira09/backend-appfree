@@ -41,7 +41,7 @@ router.post("/", [
 router.put("/:id", [
     authMiddleware, 
     ...clientController.idValidation, 
-    ...clientController.clientValidation
+    ...clientController.clientUpdateValidation
 ], clientController.update);
 
 // Deactivate a client

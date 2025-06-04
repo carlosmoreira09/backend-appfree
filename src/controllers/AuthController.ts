@@ -1,11 +1,10 @@
 import { Request, Response } from "express";
 import { body, validationResult } from "express-validator";
-import { AuthService } from "../services/AuthService";
-import { AppError } from "../middlewares/error.middleware";
 import { findUserById, findClientById, findAuthByEmail } from "../repositories";
-import { LoggerService } from "../services/LoggerService";
 import { RoleType } from "../entities/Role";
 import { AuthType } from "../entities/Auth";
+import {AuthService, LoggerService} from "../services";
+import {AppError} from "../middlewares";
 
 export class AuthController {
     private authService = new AuthService();

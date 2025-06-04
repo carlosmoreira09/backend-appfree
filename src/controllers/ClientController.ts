@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import { body, param, query, validationResult } from "express-validator";
-import { AppError } from "../middlewares";
-import { LoggerService } from "../services";
-import { ClientService } from "../services";
-import { AuthService } from "../services";
 import { MaritalStatus } from "../entities/Client";
 import {findAllDailyTransaction} from "../repositories";
+import {AuthService, ClientService, LoggerService} from "../services";
+import {AppError} from "../middlewares";
 
 export class ClientController {
     private logger = LoggerService.getInstance();
@@ -15,7 +13,7 @@ export class ClientController {
     /**
      * Validation rules for creating/updating clients
      */
-    clientValidation = [
+    clientUpdateValidation = [
         body("name").notEmpty().withMessage("Name is required"),
         body("email").isEmail().withMessage("Valid email is required"),
         body("cpf")
@@ -51,12 +49,12 @@ export class ClientController {
         body("maritalStatus")
             .optional()
             .isIn(Object.values(MaritalStatus)).withMessage("Invalid marital status"),
+    ];
+    clientValidation = [
+        ...this.clientUpdateValidation,
         body("password")
-            .optional()
-            .isLength({ min: 6 }).withMessage("Password must be at least 6 characters long"),
-        body("managerId")
-            .optional()
-            .isUUID().withMessage("Manager ID must be a valid UUID")
+            .isLength({ min: 6 }).withMessage("Password must be at least 6 characters long")
+            .optional(),
     ];
 
     /**
@@ -271,6 +269,7 @@ export class ClientController {
         try {
             // Check for validation errors
             const errors = validationResult(req);
+            console.log(errors)
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
@@ -290,11 +289,10 @@ export class ClientController {
                 complement,
                 maritalStatus,
                 password,
-                managerId
             } = req.body;
 
             // Use authenticated user as manager if not specified
-            const effectiveManagerId = managerId || req.userId;
+            const effectiveManagerId = req.userId;
             if (!effectiveManagerId) {
                 return res.status(400).json({ message: "Manager ID is required" });
             }
@@ -359,7 +357,8 @@ export class ClientController {
                 complement,
                 maritalStatus,
                 isActive,
-                managerId
+                managerId,
+                password
             } = req.body;
 
             // Get current client
@@ -394,7 +393,8 @@ export class ClientController {
                 complement,
                 maritalStatus,
                 isActive,
-                managerId
+                managerId,
+                password
             });
 
             return res.status(200).json({
@@ -523,7 +523,7 @@ export class ClientController {
             // Get all clients first (limited to improve performance)
             const transactions = await findAllDailyTransaction();
 
-            const limitedActivities = transactions.slice(0, 5);
+            const limitedActivities = transactions.slice(0, 10);
             return res.status(200).json(limitedActivities);
         } catch (error) {
             if (error instanceof AppError) {
