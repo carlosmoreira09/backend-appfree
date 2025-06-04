@@ -58,7 +58,7 @@ export class AuthService {
             await createAuth({
                 email,
                 password: hashedPassword,
-                type: AuthType.USER,
+                type: AuthType.ADMIN,
                 userId: user.id
             });
 
@@ -141,12 +141,12 @@ export class AuthService {
             const token = this.generateToken(auth);
 
             // Return user/client data based on auth type
-            if (auth.type === AuthType.USER && auth.user) {
+            if (auth.type === AuthType.ADMIN && auth.user) {
                 const { password: _, ...userWithoutPassword } = auth.user;
                 return { 
                     user: userWithoutPassword, 
                     token,
-                    type: AuthType.USER
+                    type: AuthType.ADMIN
                 };
             } else if (auth.type === AuthType.CLIENT && auth.client) {
                 return { 

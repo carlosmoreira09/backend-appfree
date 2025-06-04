@@ -6,7 +6,7 @@ import { Client } from "./Client";
  * Enum for authentication types
  */
 export enum AuthType {
-  USER = "user",
+  ADMIN = "admin",
   CLIENT = "client"
 }
 

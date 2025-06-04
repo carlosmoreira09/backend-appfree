@@ -1,7 +1,7 @@
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { DailyTransaction } from "../entities/DailyTransaction";
-import { LoggerService } from "../services/LoggerService";
+import { LoggerService } from "../services";
 
 /**
  * Repository for DailyTransaction entity
@@ -26,6 +26,21 @@ export const findDailyTransactionsByClient = async (clientId: string): Promise<D
     throw error;
   }
 };
+/**
+ * Find all daily transactions for a client by date
+ * @returns Array of daily transactions
+ */
+export const findAllDailyTransaction= async () => {
+  try {
+    return await dailyTransactionRepository.find({
+      relations: ["category", "monthlyBudget", 'client'],
+      order: {date: "ASC", createdAt: "ASC"}
+    });
+  } catch (error) {
+    logger.error(`Error finding daily transactions:`, error);
+    throw error;
+  }
+}
 
 /**
  * Find daily transactions for a client by date

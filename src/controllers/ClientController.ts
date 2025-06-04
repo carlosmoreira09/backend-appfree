@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { body, param, query, validationResult } from "express-validator";
-import { AppError } from "../middlewares/error.middleware";
-import { LoggerService } from "../services/LoggerService";
-import { ClientService } from "../services/ClientService";
-import { AuthService } from "../services/AuthService";
+import { AppError } from "../middlewares";
+import { LoggerService } from "../services";
+import { ClientService } from "../services";
+import { AuthService } from "../services";
 import { MaritalStatus } from "../entities/Client";
+import {findAllDailyTransaction} from "../repositories";
 
 export class ClientController {
     private logger = LoggerService.getInstance();
@@ -93,6 +94,7 @@ export class ClientController {
         try {
             // Check for validation errors
             const errors = validationResult(req);
+            console.log(errors)
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
@@ -478,4 +480,58 @@ export class ClientController {
             return res.status(500).json({ message: "Internal server error" });
         }
     };
+
+    /**
+     * Get dashboard stats for admin
+     * - Total clients
+     * - Active clients
+     * - System status
+     * - Last login date
+     */
+    getDashboardStats = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Get total clients count
+            const { clients: allClients, total: totalClients } = await this.clientService.getAllClientsPaginated(1, 1);
+            
+            // Get active clients count
+            const { total: activeClients } = await this.clientService.getAllClientsPaginated(1, 1, undefined, undefined, undefined, true);
+            
+            // For now, hardcode some values that would normally come from other services
+            const lastLoginDate = new Date().toISOString(); // Would normally come from auth service
+            
+            return res.status(200).json({ data:
+                allClients,
+                totalClients,
+                activeClients,
+                lastLoginDate
+            });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error fetching dashboard stats:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
+
+    /**
+     * Get recent client activities
+     * Based on recent transactions
+     */
+    getRecentActivities = async (req: Request, res: Response): Promise<Response> => {
+        try {
+
+            // Get all clients first (limited to improve performance)
+            const transactions = await findAllDailyTransaction();
+
+            const limitedActivities = transactions.slice(0, 5);
+            return res.status(200).json(limitedActivities);
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error fetching recent activities:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    }
 }

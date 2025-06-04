@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { body, param, validationResult } from "express-validator";
-import { AppError } from "../middlewares/error.middleware";
-import { LoggerService } from "../services/LoggerService";
-import { CategoryService } from "../services/CategoryService";
+import { AppError } from "../middlewares";
+import { LoggerService } from "../services";
+import { CategoryService } from "../services";
 import { AppDataSource } from "../data-source";
 import { Category } from "../entities/Category";
 import { User } from "../entities/User";

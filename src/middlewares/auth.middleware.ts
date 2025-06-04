@@ -59,7 +59,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
         }
 
         // Check if user/client exists based on auth type
-        if (auth.type === AuthType.USER && auth.userId) {
+        if (auth.type === AuthType.ADMIN && auth.userId) {
             const user = await findUserById(auth.userId);
             if (!user) {
                 throw new AppError("User not found", 401);
@@ -119,6 +119,7 @@ export const roleMiddleware = (roles: string[]) => {
             }
 
             // Check if user has required role
+            console.log(user)
             if (!user.role || !roles.includes(user.role.name)) {
                 throw new AppError("Access denied", 403);
             }

@@ -79,13 +79,13 @@ export class DatabaseService {
                 {
                     email: adminUser.email,
                     password: adminUser.password,
-                    type: AuthType.USER,
+                    type: AuthType.ADMIN,
                     userId: adminUser.id
                 },
                 {
                     email: managerUser.email,
                     password: managerUser.password,
-                    type: AuthType.USER,
+                    type: AuthType.ADMIN,
                     userId: managerUser.id
                 }
             ]);

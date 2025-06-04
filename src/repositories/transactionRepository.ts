@@ -156,4 +156,19 @@ export const getTransactionsSummary = async (
   }
 };
 
+/**
+ * Create a new transaction
+ * @returns All transaction
+ */
+export const findAllTransaction = async (): Promise<Transaction[]> => {
+  try {
+    return await transactionRepository.find({
+      relations:['client']
+    });
+  } catch (error) {
+    logger.error("Error creating transaction:", error);
+    throw error;
+  }
+};
+
 export default transactionRepository;

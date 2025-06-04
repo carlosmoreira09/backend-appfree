@@ -106,5 +106,6 @@ export const {
   updateDailyTransaction,
   deleteDailyTransaction,
   getDailyTransactionsSumByDate,
-  getDailyTransactionsSumByMonth
+  getDailyTransactionsSumByMonth,
+  findAllDailyTransaction
 } = dailyTransactionRepo;

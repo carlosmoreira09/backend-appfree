@@ -129,7 +129,7 @@ export class AuthController {
             }
             
             // Check if user is changing their own password
-            if (auth.type === AuthType.USER && auth.userId !== req.userId) {
+            if (auth.type === AuthType.ADMIN && auth.userId !== req.userId) {
                 return res.status(403).json({ message: "You are not authorized to change this password" });
             }
             
@@ -182,13 +182,13 @@ export class AuthController {
             }
 
             // Return profile based on auth type
-            if (req.authType === AuthType.USER && req.userId) {
+            if (req.authType === AuthType.ADMIN && req.userId) {
                 const user = await findUserById(req.userId);
                 if (!user) {
                     return res.status(404).json({ message: "User not found" });
                 }
                 return res.status(200).json({
-                    type: AuthType.USER,
+                    type: AuthType.ADMIN,
                     profile: user
                 });
             } else if (req.authType === AuthType.CLIENT && req.clientId) {

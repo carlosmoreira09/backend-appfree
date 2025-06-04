@@ -15,7 +15,7 @@ const logger = LoggerService.getInstance();
 export const findAllUsers = async (): Promise<Omit<User, "password">[]> => {
   try {
     const users = await userRepository.find({
-      select: ["id", "name", "email", "isActive", "createdAt", "updatedAt"]
+      select: ["id", "name", "email", "isActive", "createdAt", "updatedAt"],
     });
     return users;
   } catch (error) {
@@ -33,7 +33,8 @@ export const findUserById = async (id: string): Promise<Omit<User, "password"> |
   try {
     const user = await userRepository.findOne({
       where: { id },
-      select: ["id", "name", "email", "isActive", "createdAt", "updatedAt"]
+      select: ["id", "name", "email", "isActive", "createdAt", "updatedAt"],
+      relations: ['role']
     });
     return user;
   } catch (error) {

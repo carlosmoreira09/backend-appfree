@@ -58,4 +58,16 @@ router.delete("/:id", [
     ...clientController.idValidation
 ], clientController.delete);
 
+// Admin dashboard stats
+router.get("/stats/dashboard", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER])
+], clientController.getDashboardStats);
+
+// Recent client activities
+router.get("/stats/recent-activities", [
+    authMiddleware, 
+    roleMiddleware([RoleType.ADMIN, RoleType.MANAGER])
+], clientController.getRecentActivities);
+
 export default router;
