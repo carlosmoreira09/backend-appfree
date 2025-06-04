@@ -26,15 +26,23 @@ export class DailyTransactionService {
   /**
    * Get all daily transactions for a client
    */
-  public async getDailyTransactionsByClient(clientId: string): Promise<DailyTransaction[]> {
+  public async getDailyTransactionsByClient(
+      clientId?: string,
+      page: number = 1,
+      limit: number = 10,): Promise<{ transactions: DailyTransaction[], total: number }> {
     try {
-      // Validate client exists
-      const client = await findClientById(clientId);
-      if (!client) {
-        throw new AppError("Client not found", 404);
+      if(clientId) {
+        const client = await findClientById(clientId);
+        if (!client) {
+          throw new AppError("Client not found", 404);
+        }
+        return await findDailyTransactionsByClient(page, limit,clientId);
+
+      } else {
+        return await findDailyTransactionsByClient(page, limit);
+
       }
 
-      return await findDailyTransactionsByClient(clientId);
     } catch (error) {
       if (error instanceof AppError) {
         throw error;

@@ -64,13 +64,18 @@ export class DailyTransactionController {
      */
     getAll = async (req: Request, res: Response): Promise<Response> => {
         try {
-            // Ensure client is authenticated
-            if (!req.clientId) {
-                return res.status(403).json({ message: "Only clients can access their daily transactions" });
-            }
+            const page = req.query.page ? parseInt(req.query.page as string) : 1;
+            const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
-            const transactions = await this.dailyTransactionService.getDailyTransactionsByClient(req.clientId);
-            return res.status(200).json(transactions);
+            const { transactions, total } = await this.dailyTransactionService.getDailyTransactionsByClient(req.clientId, page, limit);
+            return res.status(200).json({
+                transactions,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }});
         } catch (error) {
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json({ message: error.message });

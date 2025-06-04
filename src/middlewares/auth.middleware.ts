@@ -119,7 +119,6 @@ export const roleMiddleware = (roles: string[]) => {
             }
 
             // Check if user has required role
-            console.log(user)
             if (!user.role || !roles.includes(user.role.name)) {
                 throw new AppError("Access denied", 403);
             }

@@ -77,7 +77,7 @@ export class ClientService {
   public async getClientsByManagerPaginated(
     managerId: string,
     page: number = 1,
-    limit: number = 10,
+    limit: number = 30,
     search?: string,
     sortBy: string = "name",
     sortOrder: "ASC" | "DESC" = "ASC",

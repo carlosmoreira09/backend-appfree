@@ -2,6 +2,7 @@ import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../data-source";
 import { DailyTransaction } from "../entities/DailyTransaction";
 import { LoggerService } from "../services";
+import {Client} from "../entities/Client";
 
 /**
  * Repository for DailyTransaction entity
@@ -11,16 +12,33 @@ const logger = LoggerService.getInstance();
 
 /**
  * Find all daily transactions for a client
+ * @param page
+ * @param limit
  * @param clientId Client ID
  * @returns Array of daily transactions
  */
-export const findDailyTransactionsByClient = async (clientId: string): Promise<DailyTransaction[]> => {
+export const findDailyTransactionsByClient = async (
+    page: number,
+    limit: number,
+    clientId?: string,
+   ): Promise<{ transactions: DailyTransaction[], total: number }> => {
   try {
-    return await dailyTransactionRepository.find({
-      where: { clientId },
-      relations: ["category", "monthlyBudget"],
-      order: { date: "DESC", createdAt: "DESC" }
-    });
+    if(clientId) {
+      const [ transactions, total ] = await dailyTransactionRepository.findAndCount({
+        where: {clientId},
+        relations: ["category", "monthlyBudget", 'client'],
+        order: {date: "DESC", createdAt: "DESC"},
+        skip: (page - 1) * limit,
+        take: limit
+      });
+      return { transactions , total }
+    } else {
+      const [ transactions, total ] = await dailyTransactionRepository.findAndCount({
+        relations: ["category", "monthlyBudget",'client'],
+        order: {date: "DESC", createdAt: "DESC"}
+      });
+      return { transactions , total }
+    }
   } catch (error) {
     logger.error(`Error finding daily transactions for client ${clientId}:`, error);
     throw error;

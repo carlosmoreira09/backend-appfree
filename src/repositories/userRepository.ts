@@ -34,7 +34,7 @@ export const findUserById = async (id: string): Promise<Omit<User, "password"> |
     const user = await userRepository.findOne({
       where: { id },
       select: ["id", "name", "email", "isActive", "createdAt", "updatedAt"],
-      relations: ['role']
+      relations: ['role'],
     });
     return user;
   } catch (error) {
