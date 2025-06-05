@@ -202,31 +202,4 @@ export class TransactionController {
             return res.status(500).json({ message: "Internal server error" });
         }
     };
-
-    getSummary = async (req: Request, res: Response): Promise<Response> => {
-        try {
-            // Check for validation errors
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-
-            const ownerId = this.getOwnerId(req);
-            const { startDate, endDate } = req.query;
-
-            const summary = await this.transactionService.getTransactionSummary(
-                ownerId,
-                startDate as string,
-                endDate as string
-            );
-
-            return res.status(200).json(summary);
-        } catch (error) {
-            if (error instanceof AppError) {
-                return res.status(error.statusCode).json({ message: error.message });
-            }
-            this.logger.error("Error generating summary:", error);
-            return res.status(500).json({ message: "Internal server error" });
-        }
-    };
 }

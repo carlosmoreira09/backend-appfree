@@ -38,9 +38,6 @@ export class Transaction {
     @Column()
     clientId: string;
 
-    @ManyToOne(() => Category, category => category.transactions, { nullable: true })
-    @JoinColumn({ name: "categoryId" })
-    category: Category;
 
     @Column({ nullable: true })
     categoryId: string;

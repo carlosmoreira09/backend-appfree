@@ -133,32 +133,22 @@ export class DatabaseService {
                 {
                     name: "Food & Dining",
                     description: "Restaurants, groceries, etc.",
-                    client: demoClient,
-                    clientId: demoClient.id
                 },
                 {
                     name: "Transportation",
                     description: "Gas, public transit, etc.",
-                    client: demoClient,
-                    clientId: demoClient.id
                 },
                 {
                     name: "Housing",
                     description: "Rent, mortgage, utilities, etc.",
-                    client: demoClient,
-                    clientId: demoClient.id
                 },
                 {
                     name: "Entertainment",
                     description: "Movies, games, etc.",
-                    client: demoClient,
-                    clientId: demoClient.id
                 },
                 {
                     name: "Salary",
                     description: "Regular income",
-                    client: demoClient,
-                    clientId: demoClient.id
                 }
             ]);
 
@@ -181,8 +171,6 @@ export class DatabaseService {
                     date: new Date(currentYear, currentMonth, 1),
                     client: demoClient,
                     clientId: demoClient.id,
-                    category: categories[4], // Salary
-                    categoryId: categories[4].id
                 },
                 {
                     description: "Rent",
@@ -191,8 +179,6 @@ export class DatabaseService {
                     date: new Date(currentYear, currentMonth, 5),
                     client: demoClient,
                     clientId: demoClient.id,
-                    category: categories[2], // Housing
-                    categoryId: categories[2].id
                 },
                 {
                     description: "Grocery Shopping",
@@ -201,8 +187,6 @@ export class DatabaseService {
                     date: new Date(currentYear, currentMonth, 10),
                     client: demoClient,
                     clientId: demoClient.id,
-                    category: categories[0], // Food & Dining
-                    categoryId: categories[0].id
                 },
                 {
                     description: "Gas",
@@ -211,8 +195,6 @@ export class DatabaseService {
                     date: new Date(currentYear, currentMonth, 15),
                     client: demoClient,
                     clientId: demoClient.id,
-                    category: categories[1], // Transportation
-                    categoryId: categories[1].id
                 },
                 {
                     description: "Movie Night",
@@ -221,8 +203,6 @@ export class DatabaseService {
                     date: new Date(currentYear, currentMonth, 20),
                     client: demoClient,
                     clientId: demoClient.id,
-                    category: categories[3], // Entertainment
-                    categoryId: categories[3].id
                 },
                 {
                     description: "Freelance Work",
@@ -231,8 +211,6 @@ export class DatabaseService {
                     date: new Date(currentYear, currentMonth, 25),
                     client: demoClient,
                     clientId: demoClient.id,
-                    category: categories[4], // Salary
-                    categoryId: categories[4].id
                 }
             ]);
 

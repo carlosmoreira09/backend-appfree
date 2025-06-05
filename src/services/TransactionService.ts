@@ -98,11 +98,10 @@ export class TransactionService {
 
       // Add category if provided and not null
       if (categoryId) {
-        const category = await findCategoryById(categoryId, clientId);
+        const category = await findCategoryById(categoryId);
         if (!category) {
           throw new AppError("Category not found", 404);
         }
-        newTransaction.category = category;
         newTransaction.categoryId = categoryId;
       }
 
@@ -146,11 +145,10 @@ export class TransactionService {
       // Update category if provided
       if (categoryId) {
           // Find and set new category
-          const category = await findCategoryById(categoryId, clientId);
+          const category = await findCategoryById(categoryId);
           if (!category) {
             throw new AppError("Category not found", 404);
           }
-          transaction.category = category;
           transaction.categoryId = categoryId;
         }
 
@@ -184,86 +182,4 @@ export class TransactionService {
     }
   }
 
-  /**
-   * Get transaction summary
-   */
-  public async getTransactionSummary(
-    clientId: string,
-    startDate: string,
-    endDate: string
-  ): Promise<{
-    totalIncome: number;
-    totalExpense: number;
-    balance: number;
-    expensesByCategory: any[];
-  }> {
-    try {
-      // Validate client exists
-      const client = await findClientById(clientId);
-      if (!client) {
-        throw new AppError("Client not found", 404);
-      }
-
-      // Get transactions in date range
-      const transactions = await getTransactionsSummary(clientId, startDate, endDate);
-
-      // Calculate summary
-      const totalIncome = transactions
-        .filter(t => t.type === TransactionType.INCOME)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
-          
-      const totalExpense = transactions
-        .filter(t => t.type === TransactionType.EXPENSE)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      // Group by category
-      const expensesByCategory = transactions
-        .filter(t => t.type === TransactionType.EXPENSE && t.category)
-        .reduce((acc, t) => {
-          const categoryId = t.category.id;
-          const categoryName = t.category.name;
-              
-          if (!acc[categoryId]) {
-            acc[categoryId] = {
-              id: categoryId,
-              name: categoryName,
-              color: t.category.color,
-              amount: 0
-            };
-          }
-              
-          acc[categoryId].amount += Number(t.amount);
-          return acc;
-        }, {} as Record<string, any>);
-
-      // Calculate uncategorized expenses
-      const uncategorizedExpenses = transactions
-        .filter(t => t.type === TransactionType.EXPENSE && !t.category)
-        .reduce((sum, t) => sum + Number(t.amount), 0);
-
-      // Add uncategorized expenses to the result if there are any
-      const expensesByCategoryArray = Object.values(expensesByCategory);
-      if (uncategorizedExpenses > 0) {
-        expensesByCategoryArray.push({
-          id: null,
-          name: "Uncategorized",
-          color: "#CCCCCC",
-          amount: uncategorizedExpenses
-        });
-      }
-
-      return {
-        totalIncome,
-        totalExpense,
-        balance: totalIncome - totalExpense,
-        expensesByCategory: expensesByCategoryArray
-      };
-    } catch (error) {
-      if (error instanceof AppError) {
-        throw error;
-      }
-      this.logger.error("Error in getTransactionSummary service:", error);
-      throw new AppError("Failed to get transaction summary", 500);
-    }
-  }
 }

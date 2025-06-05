@@ -43,15 +43,6 @@ export const findAllTransactions = async (
       whereConditions.type = filters.type;
     }
 
-    // Add category filter if provided
-    if (filters?.categoryId) {
-      if (filters.categoryId === 'null') {
-        whereConditions.category = IsNull();
-      } else {
-        whereConditions.category = { id: filters.categoryId };
-      }
-    }
-
     return await transactionRepository.find({
       where: whereConditions,
       relations: ["category"],

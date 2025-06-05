@@ -1,6 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn } from "typeorm";
-import { Client } from "./Client";
-import { Transaction } from "./Transaction";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn, JoinColumn } from "typeorm";
 import { DailyTransaction } from "./DailyTransaction";
 
 /**

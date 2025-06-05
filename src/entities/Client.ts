@@ -80,8 +80,6 @@ export class Client {
   @OneToMany(() => Transaction, transaction => transaction.client)
   transactions: Transaction[];
 
-  @OneToMany(() => Category, category => category.client)
-  categories: Category[];
 
   @OneToMany(() => MonthlyBudget, monthlyBudget => monthlyBudget.client)
   monthlyBudgets: MonthlyBudget[];

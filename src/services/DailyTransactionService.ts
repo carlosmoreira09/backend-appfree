@@ -139,14 +139,9 @@ export class DailyTransactionService {
 
       // Validate category exists if provided
       if (categoryId) {
-        const category = await findCategoryById(categoryId, clientId);
+        const category = await findCategoryById(categoryId);
         if (!category) {
           throw new AppError("Category not found", 404);
-        }
-        
-        // Validate category belongs to client
-        if (category.clientId !== clientId) {
-          throw new AppError("Category does not belong to client", 403);
         }
       }
 
@@ -224,11 +219,10 @@ export class DailyTransactionService {
 
       // Validate category exists if provided
       if (categoryId && categoryId !== transaction.categoryId) {
-        const category = await findCategoryById(categoryId, transaction.clientId);
+        const category = await findCategoryById(categoryId);
         if (!category) {
           throw new AppError("Category not found", 404);
         }
-        
         transaction.category = category;
         transaction.categoryId = categoryId;
       }
