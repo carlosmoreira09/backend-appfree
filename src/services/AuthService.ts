@@ -3,8 +3,7 @@ import jwt from "jsonwebtoken";
 import { User } from "../entities/User";
 import { Client } from "../entities/Client";
 import { Auth, AuthType } from "../entities/Auth";
-import { AppError } from "../middlewares/error.middleware";
-import { 
+import {
   findUserByEmail, 
   createUser, 
   findAuthByEmail, 
@@ -16,6 +15,7 @@ import {
 } from "../repositories";
 import { LoggerService } from "./LoggerService";
 import { RoleType } from "../entities/Role";
+import {AppError} from "../middlewares";
 
 export class AuthService {
     private logger = LoggerService.getInstance();

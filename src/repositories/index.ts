@@ -23,6 +23,7 @@ export {
 export const {
   findAllUsers,
   findUserById,
+  findUserByIdWithPassword,
   findUserByEmail,
   createUser,
   updateUser,

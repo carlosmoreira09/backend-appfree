@@ -8,7 +8,8 @@ import {
   findUserByEmail,
   createUser,
   updateUser,
-  deleteUser
+  deleteUser,
+  findUserByIdWithPassword
 } from "../repositories";
 
 export class UserService {
@@ -41,6 +42,25 @@ export class UserService {
         throw error;
       }
       this.logger.error(`Error in getUserById service for ID ${id}:`, error);
+      throw new AppError("Failed to get user", 500);
+    }
+  }
+
+  /**
+   * Get a user by ID with password (for authentication purposes)
+   */
+  public async getUserWithPassword(id: string): Promise<User> {
+    try {
+      const user = await findUserByIdWithPassword(id);
+      if (!user) {
+        throw new AppError("User not found", 404);
+      }
+      return user;
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      this.logger.error(`Error in getUserWithPassword service for ID ${id}:`, error);
       throw new AppError("Failed to get user", 500);
     }
   }
@@ -139,6 +159,34 @@ export class UserService {
       }
       this.logger.error(`Error in updateUser service for ID ${id}:`, error);
       throw new AppError("Failed to update user", 500);
+    }
+  }
+
+  /**
+   * Update user password
+   */
+  public async updatePassword(id: string, newPassword: string): Promise<void> {
+    try {
+      // Find user
+      const user = await findUserById(id);
+      if (!user) {
+        throw new AppError("User not found", 404);
+      }
+
+      // Hash new password
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      // Update user with new password
+      await updateUser({
+        ...user,
+        password: hashedPassword
+      });
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      this.logger.error(`Error in updatePassword service for ID ${id}:`, error);
+      throw new AppError("Failed to update password", 500);
     }
   }
 

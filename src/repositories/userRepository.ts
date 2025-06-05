@@ -44,6 +44,25 @@ export const findUserById = async (id: string): Promise<Omit<User, "password"> |
 };
 
 /**
+ * Find a user by ID with password included
+ * @param id User ID
+ * @returns User with password or null if not found
+ */
+export const findUserByIdWithPassword = async (id: string): Promise<User | null> => {
+  try {
+    const user = await userRepository.findOne({
+      where: { id },
+      select: ["id", "name", "email", "password", "isActive", "createdAt", "updatedAt"],
+      relations: ['role'],
+    });
+    return user;
+  } catch (error) {
+    logger.error(`Error finding user with ID ${id} (with password):`, error);
+    throw error;
+  }
+};
+
+/**
  * Find a user by email
  * @param email User email
  * @param includePassword Whether to include password in the result

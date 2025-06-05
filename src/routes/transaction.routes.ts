@@ -5,7 +5,6 @@ import { authMiddleware } from "../middlewares";
 const router = Router({ mergeParams: true });
 const transactionController = new TransactionController();
 
-// Transaction routes (all protected by authMiddleware)
 router.get("/", authMiddleware, transactionController.getAll);
 router.get("/:id", [authMiddleware, ...transactionController.idValidation], transactionController.getById);
 router.post("/", [authMiddleware, ...transactionController.transactionValidation], transactionController.create);

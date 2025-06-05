@@ -6,10 +6,6 @@ import { RoleType } from "../entities/Role";
 const router = Router();
 const roleController = new RoleController();
 
-// Public routes
-// None
-
-// Protected routes (require authentication and admin role)
 router.get("/", [authMiddleware, roleMiddleware([RoleType.ADMIN])], roleController.getAll);
 router.get("/:id", [authMiddleware, roleMiddleware([RoleType.ADMIN]), ...roleController.idValidation], roleController.getById);
 router.post("/", [authMiddleware, roleMiddleware([RoleType.ADMIN]), ...roleController.roleValidation], roleController.create);

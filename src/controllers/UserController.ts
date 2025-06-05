@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import { body, param, validationResult } from "express-validator";
-import { AppError } from "../middlewares/error.middleware";
-import { LoggerService } from "../services/LoggerService";
-import { UserService } from "../services/UserService";
+import * as bcrypt from "bcryptjs";
+import {LoggerService, UserService} from "../services";
+import {AppError} from "../middlewares";
+
 
 export class UserController {
     private logger = LoggerService.getInstance();
@@ -19,6 +20,19 @@ export class UserController {
             .isLength({ min: 6 })
             .withMessage("Password must be at least 6 characters long"),
         body("isActive").optional().isBoolean().withMessage("isActive must be a boolean")
+    ];
+
+    /**
+     * Validation rules for changing password
+     */
+    passwordValidation = [
+        body("currentPassword")
+            .exists()
+            .withMessage("Current password is required"),
+        body("newPassword")
+            .exists()
+            .isLength({ min: 6 })
+            .withMessage("New password must be at least 6 characters long")
     ];
 
     /**
@@ -131,6 +145,46 @@ export class UserController {
                 return res.status(error.statusCode).json({ message: error.message });
             }
             this.logger.error("Error deleting user:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    changePassword = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Check for validation errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const id = req.params.id;
+            const { currentPassword, newPassword } = req.body;
+            
+            // Verify user exists and get user with password
+            const user = await this.userService.getUserWithPassword(id);
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            if (req.userId !== id) {
+                return res.status(403).json({ message: "You can only change your own password" });
+            }
+            
+            // Verify current password
+            const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+            if (!isPasswordValid) {
+                return res.status(401).json({ message: "Current password is incorrect" });
+            }
+            
+            // Update password
+            await this.userService.updatePassword(id, newPassword);
+            
+            return res.status(200).json({ message: "Password updated successfully" });
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error changing password:", error);
             return res.status(500).json({ message: "Internal server error" });
         }
     };

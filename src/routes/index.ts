@@ -10,16 +10,13 @@ import dailyTransactionRoutes from "./dailyTransaction.routes";
 
 const router = Router();
 
-// Mount routes
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
 router.use("/clients", clientRoutes);
 router.use("/roles", roleRoutes);
 router.use("/monthly-budgets", monthlyBudgetRoutes);
 router.use("/daily-transactions", dailyTransactionRoutes);
-
-// Routes with user/client context
-router.use("/users/:userId/categories", categoryRoutes);
+router.use("/categories", categoryRoutes);
 router.use("/users/:userId/transactions", transactionRoutes);
 
 export default router;
