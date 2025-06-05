@@ -133,40 +133,30 @@ export class DatabaseService {
                 {
                     name: "Food & Dining",
                     description: "Restaurants, groceries, etc.",
-                    color: "#FF5733",
-                    icon: "restaurant",
                     client: demoClient,
                     clientId: demoClient.id
                 },
                 {
                     name: "Transportation",
                     description: "Gas, public transit, etc.",
-                    color: "#33A1FF",
-                    icon: "directions_car",
                     client: demoClient,
                     clientId: demoClient.id
                 },
                 {
                     name: "Housing",
                     description: "Rent, mortgage, utilities, etc.",
-                    color: "#33FF57",
-                    icon: "home",
                     client: demoClient,
                     clientId: demoClient.id
                 },
                 {
                     name: "Entertainment",
                     description: "Movies, games, etc.",
-                    color: "#D133FF",
-                    icon: "movie",
                     client: demoClient,
                     clientId: demoClient.id
                 },
                 {
                     name: "Salary",
                     description: "Regular income",
-                    color: "#33FFC1",
-                    icon: "account_balance",
                     client: demoClient,
                     clientId: demoClient.id
                 }

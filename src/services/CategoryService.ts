@@ -17,16 +17,11 @@ export class CategoryService {
   /**
    * Get all categories for a client
    */
-  public async getAllCategories(clientId: string): Promise<Category[]> {
+  public async getAllCategories(): Promise<Category[]> {
     try {
-      // Validate client exists
-      const client = await findClientById(clientId);
-      if (!client) {
-        throw new AppError("Client not found", 404);
-      }
 
       // Get categories
-      return await findAllCategories(clientId);
+      return await findAllCategories();
     } catch (error) {
       if (error instanceof AppError) {
         throw error;
@@ -39,9 +34,9 @@ export class CategoryService {
   /**
    * Get a category by ID
    */
-  public async getCategoryById(id: string, clientId: string): Promise<Category> {
+  public async getCategoryById(id: string): Promise<Category> {
     try {
-      const category = await findCategoryById(id, clientId);
+      const category = await findCategoryById(id);
       if (!category) {
         throw new AppError("Category not found", 404);
       }
@@ -62,21 +57,14 @@ export class CategoryService {
     clientId: string,
     categoryData: {
       name: string;
-      color?: string;
-      icon?: string;
+      description?: string;
     }
   ): Promise<Category> {
     try {
-      const { name, color, icon } = categoryData;
-
-      // Find client
-      const client = await findClientById(clientId);
-      if (!client) {
-        throw new AppError("Client not found", 404);
-      }
+      const { name, description } = categoryData;
 
       // Check if category with same name already exists for this client
-      const existingCategories = await findAllCategories(clientId);
+      const existingCategories = await findAllCategories();
       const categoryExists = existingCategories.some(
         c => c.name.toLowerCase() === name.toLowerCase()
       );
@@ -88,10 +76,7 @@ export class CategoryService {
       // Create category object
       const newCategory: Partial<Category> = {
         name,
-        color: color || this.generateRandomColor(),
-        icon: icon || "default",
-        client,
-        clientId
+        description
       };
 
       // Save category
@@ -113,19 +98,18 @@ export class CategoryService {
     clientId: string,
     updateData: {
       name?: string;
-      color?: string;
-      icon?: string;
+      description?: string;
     }
   ): Promise<Category> {
     try {
-      const { name, color, icon } = updateData;
+      const { name, description } = updateData;
 
       // Find category
-      const category = await this.getCategoryById(id, clientId);
+      const category = await this.getCategoryById(id);
 
       // If name is being updated, check if it already exists
       if (name && name !== category.name) {
-        const existingCategories = await findAllCategories(clientId);
+        const existingCategories = await findAllCategories();
         const categoryExists = existingCategories.some(
           c => c.name.toLowerCase() === name.toLowerCase() && c.id !== id
         );
@@ -137,8 +121,7 @@ export class CategoryService {
 
       // Update category properties
       if (name !== undefined) category.name = name;
-      if (color !== undefined) category.color = color;
-      if (icon !== undefined) category.icon = icon;
+      if (description !== undefined) category.description = description;
 
       // Save updated category
       return await updateCategory(category);
@@ -157,7 +140,7 @@ export class CategoryService {
   public async deleteCategory(id: string, clientId: string): Promise<void> {
     try {
       // Find category
-      const category = await this.getCategoryById(id, clientId);
+      const category = await this.getCategoryById(id);
 
       // Delete category
       await deleteCategory(category);

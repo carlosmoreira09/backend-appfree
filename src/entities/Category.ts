@@ -17,23 +17,7 @@ export class Category {
     @Column({ nullable: true })
     description: string;
 
-    @Column({ nullable: true })
-    color: string;
-
-    @Column({ nullable: true })
-    icon: string;
-
-    @ManyToOne(() => Client, client => client.categories)
-    @JoinColumn({ name: "clientId" })
-    client: Client;
-
-    @Column()
-    clientId: string;
-
-    @OneToMany(() => Transaction, transaction => transaction.category)
-    transactions: Transaction[];
-
-    @OneToMany(() => DailyTransaction, dailyTransaction => dailyTransaction.category)
+    @OneToMany(() => DailyTransaction, dailyTransaction => dailyTransaction.category, { nullable: true })
     dailyTransactions: DailyTransaction[];
 
     @CreateDateColumn()

@@ -10,8 +10,7 @@ import { User } from "../entities/User";
 export class CategoryController {
     private logger = LoggerService.getInstance();
     private categoryService = new CategoryService();
-    private categoryRepository = AppDataSource.getRepository(Category);
-    private userRepository = AppDataSource.getRepository(User);
+
 
     /**
      * Validation rules for creating/updating categories
@@ -20,13 +19,9 @@ export class CategoryController {
         body("name")
             .notEmpty().withMessage("Name is required")
             .isString().withMessage("Name must be a string"),
-        body("color")
+        body("description")
             .optional()
-            .isString().withMessage("Color must be a string")
-            .matches(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).withMessage("Color must be a valid hex color"),
-        body("icon")
-            .optional()
-            .isString().withMessage("Icon must be a string")
+            .isString().withMessage("Name must be a string"),
     ];
 
     /**
@@ -63,8 +58,7 @@ export class CategoryController {
 
     getAll = async (req: Request, res: Response): Promise<Response> => {
         try {
-            const ownerId = this.getOwnerId(req);
-            const categories = await this.categoryService.getAllCategories(ownerId);
+            const categories = await this.categoryService.getAllCategories();
             return res.status(200).json(categories);
         } catch (error) {
             if (error instanceof AppError) {
@@ -82,11 +76,8 @@ export class CategoryController {
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-
             const id = req.params.id;
-            const ownerId = this.getOwnerId(req);
-
-            const category = await this.categoryService.getCategoryById(id, ownerId);
+            const category = await this.categoryService.getCategoryById(id);
             return res.status(200).json(category);
         } catch (error) {
             if (error instanceof AppError) {
@@ -105,13 +96,12 @@ export class CategoryController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { name, color, icon } = req.body;
+            const { name, description  } = req.body;
             const ownerId = this.getOwnerId(req);
 
             const category = await this.categoryService.createCategory(ownerId, {
                 name,
-                color,
-                icon
+                description
             });
 
             return res.status(201).json(category);
@@ -134,12 +124,11 @@ export class CategoryController {
 
             const id = req.params.id;
             const ownerId = this.getOwnerId(req);
-            const { name, color, icon } = req.body;
+            const { name, description } = req.body;
 
             const category = await this.categoryService.updateCategory(id, ownerId, {
                 name,
-                color,
-                icon
+                description
             });
 
             return res.status(200).json(category);

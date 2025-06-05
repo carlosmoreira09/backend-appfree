@@ -13,10 +13,9 @@ const logger = LoggerService.getInstance();
  * @param clientId Client ID
  * @returns Array of categories
  */
-export const findAllCategories = async (clientId: string): Promise<Category[]> => {
+export const findAllCategories = async (): Promise<Category[]> => {
   try {
     return await categoryRepository.find({
-      where: { client: { id: clientId } },
       order: { name: "ASC" }
     });
   } catch (error) {
@@ -31,12 +30,11 @@ export const findAllCategories = async (clientId: string): Promise<Category[]> =
  * @param clientId Client ID
  * @returns Category or null if not found
  */
-export const findCategoryById = async (id: string, clientId: string): Promise<Category | null> => {
+export const findCategoryById = async (id: string): Promise<Category | null> => {
   try {
     return await categoryRepository.findOne({
       where: { 
-        id,
-        client: { id: clientId }
+        id: id,
       }
     });
   } catch (error) {
