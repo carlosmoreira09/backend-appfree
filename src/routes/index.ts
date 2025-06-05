@@ -21,9 +21,5 @@ router.use("/daily-transactions", dailyTransactionRoutes);
 // Routes with user/client context
 router.use("/users/:userId/categories", categoryRoutes);
 router.use("/users/:userId/transactions", transactionRoutes);
-router.use("/clients/:clientId/categories", categoryRoutes);
-router.use("/clients/:clientId/transactions", transactionRoutes);
-router.use("/clients/:clientId/monthly-budgets", monthlyBudgetRoutes);
-router.use("/clients/:clientId/daily-transactions", dailyTransactionRoutes);
 
 export default router;

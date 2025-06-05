@@ -1,15 +1,18 @@
 import { Router } from "express";
 import { DailyTransactionController } from "../controllers/DailyTransactionController";
 import { authMiddleware } from "../middlewares";
+import {ClientController} from "../controllers/ClientController";
 
 const router = Router();
 const dailyTransactionController = new DailyTransactionController();
-
 // All routes require authentication
 router.use(authMiddleware);
 
 // Get all daily transactions for the authenticated client
 router.get("/", dailyTransactionController.getAll);
+
+// Get daily transactions sum by date
+router.get("/client/:clientId", [...dailyTransactionController.clientIdValidation], dailyTransactionController.getByClientId);
 
 // Get daily transactions for a specific date
 router.get("/date/:date", [...dailyTransactionController.dateValidation], dailyTransactionController.getByDate);

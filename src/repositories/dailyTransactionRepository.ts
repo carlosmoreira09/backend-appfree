@@ -23,9 +23,10 @@ export const findDailyTransactionsByClient = async (
     clientId?: string,
    ): Promise<{ transactions: DailyTransaction[], total: number }> => {
   try {
+    console.log('id: '+ clientId)
     if(clientId) {
       const [ transactions, total ] = await dailyTransactionRepository.findAndCount({
-        where: {clientId},
+        where: { client: {id: clientId}},
         relations: ["category", "monthlyBudget", 'client'],
         order: {date: "DESC", createdAt: "DESC"},
         skip: (page - 1) * limit,

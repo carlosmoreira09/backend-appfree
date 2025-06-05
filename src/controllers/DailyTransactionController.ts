@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import { body, param, query, validationResult } from "express-validator";
-import { AppError } from "../middlewares/error.middleware";
-import { LoggerService } from "../services/LoggerService";
-import { DailyTransactionService } from "../services/DailyTransactionService";
 import { TransactionType } from "../entities/DailyTransaction";
+import {DailyTransactionService, LoggerService} from "../services";
+import {AppError} from "../middlewares";
 
 export class DailyTransactionController {
     private logger = LoggerService.getInstance();
@@ -15,7 +14,12 @@ export class DailyTransactionController {
     idValidation = [
         param("id").isUUID().withMessage("Invalid daily transaction ID format")
     ];
-
+    /**
+     * Validation rules for client ID
+     */
+    clientIdValidation = [
+        param("clientId").isUUID().withMessage("Invalid client ID format")
+    ];
     /**
      * Validation rules for creating/updating daily transactions
      */
@@ -170,6 +174,29 @@ export class DailyTransactionController {
             }
             
             return res.status(200).json(transaction);
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error fetching daily transaction:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+    /**
+     * Get a daily transaction by client ID
+     */
+    getByClientId = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Check for validation errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const clientId = req.params.clientId;
+            const transactions = await this.dailyTransactionService.getDailyTransactionsByClient(clientId);
+
+            return res.status(200).json(transactions);
         } catch (error) {
             if (error instanceof AppError) {
                 return res.status(error.statusCode).json({ message: error.message });
