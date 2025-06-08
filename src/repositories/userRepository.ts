@@ -1,4 +1,4 @@
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { User } from "../entities/User";
 import { LoggerService } from "../services/LoggerService";
 

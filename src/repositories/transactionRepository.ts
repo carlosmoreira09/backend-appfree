@@ -1,5 +1,5 @@
 import { Between, FindOptionsWhere, IsNull } from "typeorm";
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { Transaction, TransactionType } from "../entities/Transaction";
 import { LoggerService } from "../services/LoggerService";
 

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import * as dotenv from "dotenv";
-import { LoggerService } from "./services/LoggerService";
+import { LoggerService } from "../services/LoggerService";
 import { join } from "path";
 
 // Load environment variables from .env file
@@ -16,16 +16,15 @@ const rootDir = isProd ? "dist" : "src";
 
 export const AppDataSource = new DataSource({
     type: "postgres",
-    host: process.env.DB_HOST || "localhost",
+    host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || "5432"),
-    username: process.env.DB_USERNAME || "postgres",
-    password: process.env.DB_PASSWORD || "postgres",
-    database: process.env.DB_DATABASE || "appfree",
-    synchronize: process.env.NODE_ENV === "development", // Auto-create database schema in development
-    logging: process.env.NODE_ENV === "development",
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    synchronize: true, // Auto-create database schema in development
+    logging: false,
     entities: [join(rootDir, "/entities/**/*.{js,ts}")],
-    migrations: [join(rootDir, "/migrations/**/*.{js,ts}")],
-    subscribers: [join(rootDir, "/subscribers/**/*.{js,ts}")],
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
 });
 
 // Initialize the data source

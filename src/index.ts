@@ -3,7 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import { initializeDataSource } from "./data-source";
+import { initializeDataSource } from "./config/data-source";
 import routes from "./routes";
 import { errorMiddleware } from "./middlewares";
 import { LoggerService } from "./services";

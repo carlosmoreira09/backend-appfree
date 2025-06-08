@@ -1,5 +1,5 @@
 import { ILike } from "typeorm";
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { Client } from "../entities/Client";
 import { LoggerService } from "../services/LoggerService";
 

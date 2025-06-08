@@ -1,5 +1,5 @@
 import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { DailyTransaction } from "../entities/DailyTransaction";
 import { LoggerService } from "../services";
 import {Client} from "../entities/Client";

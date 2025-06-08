@@ -1,4 +1,4 @@
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { CreateMonthlyBudgetAndDailyTransaction1717326100000 } from "../migrations/1717326100000-CreateMonthlyBudgetAndDailyTransaction";
 import { LoggerService } from "../services/LoggerService";
 

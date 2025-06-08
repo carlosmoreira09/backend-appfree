@@ -1,0 +1,25 @@
+name: Check Build
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: npm ci
+      
+      - name: Check for vulnerabilities
+        run: npm audit --audit-level=moderate
+        # This will return non-zero exit code if vulnerabilities are found at moderate level or higher
+        # Thus will fail the workflow and block the merge before building
+      
+      - run: NODE_OPTIONS='--max-old-space-size=4096' npm run build

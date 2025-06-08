@@ -1,5 +1,5 @@
 import { Between } from "typeorm";
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { MonthlyBudget } from "../entities/MonthlyBudget";
 import { LoggerService } from "../services/LoggerService";
 

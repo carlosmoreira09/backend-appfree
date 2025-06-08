@@ -1,4 +1,4 @@
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { LoggerService } from "../services/LoggerService";
 import { findUserByEmail, findRoleByName, updateUser } from "../repositories";
 import { RoleType } from "../entities/Role";

@@ -1,4 +1,4 @@
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { DatabaseService } from "../services/DatabaseService";
 import * as dotenv from "dotenv";
 

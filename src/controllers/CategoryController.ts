@@ -3,7 +3,7 @@ import { body, param, validationResult } from "express-validator";
 import { AppError } from "../middlewares";
 import { LoggerService } from "../services";
 import { CategoryService } from "../services";
-import { AppDataSource } from "../data-source";
+import { AppDataSource } from "../config/data-source";
 import { Category } from "../entities/Category";
 import { User } from "../entities/User";
 
