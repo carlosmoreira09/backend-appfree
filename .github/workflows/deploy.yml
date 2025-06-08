@@ -10,7 +10,6 @@ on:
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -32,4 +31,6 @@ jobs:
             git pull origin main &&
             npm install &&
             npm run build
+            pm2 restart backend
           "
+          
