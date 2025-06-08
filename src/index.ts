@@ -34,6 +34,14 @@ app.get("/health", (_, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date() });
 });
 
+app.get("/check", (_, res) => {
+  res.status(200).json({ 
+    message: "App is running", 
+    status: "online", 
+    timestamp: new Date() 
+  });
+});
+
 app.use(errorMiddleware);
 
 const startServer = async () => {
