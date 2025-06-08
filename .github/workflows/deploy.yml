@@ -1,10 +1,12 @@
-name: Deploy Frontend on Merge to Main
+name: Deploy to VM
 
 on:
   pull_request:
     types: [closed]
     branches:
       - main
+  push:
+    branches: [ main ]
 
 jobs:
   deploy:
