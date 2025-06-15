@@ -288,9 +288,9 @@ export class ClientController {
                 zipCode,
                 complement,
                 maritalStatus,
-                password,
             } = req.body;
-
+            const password = name.toString().split(' ')[0].toLowerCase() + birthday.toString().split('-')[0].toLowerCase();
+            console.log(password);
             // Use authenticated user as manager if not specified
             const effectiveManagerId = req.userId;
             if (!effectiveManagerId) {
