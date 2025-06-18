@@ -391,6 +391,27 @@ export class MonthlyBudgetController {
     };
 
     /**
+     * Get current daily budget status for authenticated client
+     */
+    getCurrentDailyStatus = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Check authentication
+            if (!req.authType || !req.clientId) {
+                return res.status(401).json({ message: "Client authentication required" });
+            }
+
+            const dailyStatus = await this.monthlyBudgetService.getCurrentDailyBudgetStatus(req.clientId);
+            return res.status(200).json(dailyStatus);
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error fetching daily budget status:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
+
+    /**
      * Admin: Get all monthly budgets with client information
      */
     adminGetAll = async (req: Request, res: Response): Promise<Response> => {

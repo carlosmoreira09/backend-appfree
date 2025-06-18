@@ -10,6 +10,7 @@ router.use(authMiddleware);
 
 // Routes accessible by both clients and admins
 router.get("/", monthlyBudgetController.getAll);
+router.get("/daily-status", monthlyBudgetController.getCurrentDailyStatus);
 router.get("/:id", [...monthlyBudgetController.idValidation], monthlyBudgetController.getById);
 router.get("/year/:year/month/:month", [...monthlyBudgetController.yearMonthValidation], monthlyBudgetController.getOrCreateByYearMonth);
 router.patch("/:id/salary", [

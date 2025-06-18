@@ -261,4 +261,63 @@ export class MonthlyBudgetService {
       throw new AppError("Failed to delete monthly budget", 500);
     }
   }
+
+  /**
+   * Get current daily budget status for a client
+   */
+  public async getCurrentDailyBudgetStatus(clientId: string): Promise<{
+    dailyBudget: number;
+    remainingBalance: number;
+    todaySpent: number;
+    todayIncome: number;
+    monthlyBudget: MonthlyBudget | null;
+  }> {
+    try {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = now.getMonth() + 1;
+      
+      // Get or create current month's budget
+      const monthlyBudget = await this.getOrCreateMonthlyBudget(clientId, year, month);
+      
+      // Get today's transactions
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const { findDailyTransactionsByClientAndDateRange } = await import("../repositories/dailyTransactionRepository");
+      const todayTransactions = await findDailyTransactionsByClientAndDateRange(
+        clientId,
+        today,
+        tomorrow
+      );
+      
+      // Calculate today's spent and income
+      let todaySpent = 0;
+      let todayIncome = 0;
+      
+      todayTransactions.forEach((transaction) => {
+        if (transaction.type === 'expense') {
+          todaySpent += Number(transaction.amount);
+        } else if (transaction.type === 'income') {
+          todayIncome += Number(transaction.amount);
+        }
+      });
+      
+      // Calculate remaining balance for today
+      const remainingBalance = monthlyBudget.dailyBudget + todayIncome - todaySpent;
+      
+      return {
+        dailyBudget: Number(monthlyBudget.dailyBudget),
+        remainingBalance: remainingBalance,
+        todaySpent: todaySpent,
+        todayIncome: todayIncome,
+        monthlyBudget: monthlyBudget
+      };
+    } catch (error) {
+      this.logger.error(`Error getting daily budget status for client ${clientId}:`, error);
+      throw new AppError("Failed to get daily budget status", 500);
+    }
+  }
 }

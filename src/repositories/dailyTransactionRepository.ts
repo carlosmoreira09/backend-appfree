@@ -62,6 +62,34 @@ export const findAllDailyTransaction= async () => {
 }
 
 /**
+ * Find daily transactions for a client by date range
+ * @param clientId Client ID
+ * @param startDate Start date
+ * @param endDate End date
+ * @returns Array of daily transactions
+ */
+export const findDailyTransactionsByClientAndDateRange = async (
+  clientId: string,
+  startDate: Date,
+  endDate: Date
+): Promise<DailyTransaction[]> => {
+  try {
+    const transactions = await dailyTransactionRepository.find({
+      where: {
+        client: { id: clientId },
+        date: Between(startDate, endDate)
+      },
+      relations: ["category", "monthlyBudget", "client"],
+      order: { date: "DESC", createdAt: "DESC" }
+    });
+    return transactions;
+  } catch (error) {
+    logger.error(`Error finding daily transactions for client ${clientId} between ${startDate} and ${endDate}:`, error);
+    throw error;
+  }
+};
+
+/**
  * Find daily transactions for a client by date
  * @param clientId Client ID
  * @param date Date

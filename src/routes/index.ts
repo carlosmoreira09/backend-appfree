@@ -7,6 +7,7 @@ import clientRoutes from "./client.routes";
 import roleRoutes from "./role.routes";
 import monthlyBudgetRoutes from "./monthlyBudget.routes";
 import dailyTransactionRoutes from "./dailyTransaction.routes";
+import { analyticsRouter } from "./analytics.routes";
 
 const router = Router();
 
@@ -17,6 +18,7 @@ router.use("/roles", roleRoutes);
 router.use("/monthly-budgets", monthlyBudgetRoutes);
 router.use("/daily-transactions", dailyTransactionRoutes);
 router.use("/categories", categoryRoutes);
+router.use("/analytics", analyticsRouter);
 router.use("/users/:userId/transactions", transactionRoutes);
 
 export default router;
