@@ -265,7 +265,7 @@ export class MonthlyBudgetService {
   /**
    * Get current daily budget status for a client
    */
-  public async getCurrentDailyBudgetStatus(clientId: string): Promise<{
+  public async getCurrentDailyBudgetStatus(clientId: string, targetDate?: Date): Promise<{
     dailyBudget: number;
     remainingBalance: number;
     todaySpent: number;
@@ -273,31 +273,32 @@ export class MonthlyBudgetService {
     monthlyBudget: MonthlyBudget | null;
   }> {
     try {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = now.getMonth() + 1;
+      // Use provided date or default to current date
+      const date = targetDate || new Date();
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
       
-      // Get or create current month's budget
+      // Get or create monthly budget for the specified month
       const monthlyBudget = await this.getOrCreateMonthlyBudget(clientId, year, month);
       
-      // Get today's transactions
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const tomorrow = new Date(today);
-      tomorrow.setDate(tomorrow.getDate() + 1);
+      // Set the target day to start of day
+      const startDate = new Date(date);
+      startDate.setHours(0, 0, 0, 0);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + 1);
       
       const { findDailyTransactionsByClientAndDateRange } = await import("../repositories/dailyTransactionRepository");
-      const todayTransactions = await findDailyTransactionsByClientAndDateRange(
+      const dayTransactions = await findDailyTransactionsByClientAndDateRange(
         clientId,
-        today,
-        tomorrow
+        startDate,
+        endDate
       );
       
-      // Calculate today's spent and income
+      // Calculate day's spent and income
       let todaySpent = 0;
       let todayIncome = 0;
       
-      todayTransactions.forEach((transaction) => {
+      dayTransactions.forEach((transaction) => {
         if (transaction.type === 'expense') {
           todaySpent += Number(transaction.amount);
         } else if (transaction.type === 'income') {
@@ -305,7 +306,7 @@ export class MonthlyBudgetService {
         }
       });
       
-      // Calculate remaining balance for today
+      // Calculate remaining balance for the day
       const remainingBalance = monthlyBudget.dailyBudget + todayIncome - todaySpent;
       
       return {

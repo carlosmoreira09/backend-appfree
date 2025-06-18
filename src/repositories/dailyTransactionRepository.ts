@@ -1,4 +1,4 @@
-import { Between, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
+import { Between, LessThan, MoreThan, LessThanOrEqual, MoreThanOrEqual } from "typeorm";
 import { AppDataSource } from "../config/data-source";
 import { DailyTransaction } from "../entities/DailyTransaction";
 import { LoggerService } from "../services";
@@ -23,7 +23,6 @@ export const findDailyTransactionsByClient = async (
     clientId?: string,
    ): Promise<{ transactions: DailyTransaction[], total: number }> => {
   try {
-    console.log('id: '+ clientId)
     if(clientId) {
       const [ transactions, total ] = await dailyTransactionRepository.findAndCount({
         where: { client: {id: clientId}},
@@ -97,8 +96,18 @@ export const findDailyTransactionsByClientAndDateRange = async (
  */
 export const findDailyTransactionsByDate = async (clientId: string, date: Date): Promise<DailyTransaction[]> => {
   try {
+    // Create start and end of day for proper date filtering
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+    
     return await dailyTransactionRepository.find({
-      where: { clientId, date },
+      where: { 
+        clientId, 
+        date: Between(startOfDay, endOfDay)
+      },
       relations: ["category", "monthlyBudget"],
       order: { createdAt: "DESC" }
     });

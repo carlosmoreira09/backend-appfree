@@ -8,6 +8,10 @@ const dailyTransactionController = new DailyTransactionController();
 router.use(authMiddleware);
 router.get("/", dailyTransactionController.getAll);
 router.get("/client/:clientId", [...dailyTransactionController.clientIdValidation], dailyTransactionController.getByClientId);
+router.get("/client/:clientId/date/:date", [
+    ...dailyTransactionController.clientIdValidation,
+    ...dailyTransactionController.dateValidation
+], dailyTransactionController.getClientTransactionsByDate);
 router.get("/date/:date", [...dailyTransactionController.dateValidation], dailyTransactionController.getByDate);
 router.get("/year/:year/month/:month", [...dailyTransactionController.yearMonthValidation], dailyTransactionController.getByMonth);
 router.get("/:id", [...dailyTransactionController.idValidation], dailyTransactionController.getById);

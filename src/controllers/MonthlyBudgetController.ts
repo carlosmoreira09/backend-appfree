@@ -400,7 +400,18 @@ export class MonthlyBudgetController {
                 return res.status(401).json({ message: "Client authentication required" });
             }
 
-            const dailyStatus = await this.monthlyBudgetService.getCurrentDailyBudgetStatus(req.clientId);
+            // Check if date query parameter is provided
+            let targetDate: Date | undefined;
+            if (req.query.date && typeof req.query.date === 'string') {
+                targetDate = new Date(req.query.date);
+                
+                // Validate date
+                if (isNaN(targetDate.getTime())) {
+                    return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD" });
+                }
+            }
+
+            const dailyStatus = await this.monthlyBudgetService.getCurrentDailyBudgetStatus(req.clientId, targetDate);
             return res.status(200).json(dailyStatus);
         } catch (error) {
             if (error instanceof AppError) {

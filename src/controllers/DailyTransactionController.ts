@@ -393,4 +393,40 @@ export class DailyTransactionController {
             return res.status(500).json({ message: "Internal server error" });
         }
     };
+
+    /**
+     * Get transactions for a client on a specific date
+     */
+    getClientTransactionsByDate = async (req: Request, res: Response): Promise<Response> => {
+        try {
+            // Check for validation errors
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const clientId = req.params.clientId;
+            const dateStr = req.params.date;
+            
+            // Verify access permission for client
+            if (req.clientId && req.clientId !== clientId) {
+                return res.status(403).json({ message: "Access denied" });
+            }
+
+            // Parse the date string to a Date object
+            const date = new Date(dateStr);
+            
+            // Use the repository to find transactions by date
+            const { findDailyTransactionsByDate } = await import("../repositories/dailyTransactionRepository");
+            const transactions = await findDailyTransactionsByDate(clientId, date);
+            
+            return res.status(200).json(transactions);
+        } catch (error) {
+            if (error instanceof AppError) {
+                return res.status(error.statusCode).json({ message: error.message });
+            }
+            this.logger.error("Error fetching client transactions by date:", error);
+            return res.status(500).json({ message: "Internal server error" });
+        }
+    };
 }
