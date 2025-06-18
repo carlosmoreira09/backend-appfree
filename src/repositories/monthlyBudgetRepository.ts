@@ -108,4 +108,22 @@ export const deleteMonthlyBudget = async (budget: MonthlyBudget): Promise<Monthl
   }
 };
 
+export const getAllWithClients = async (): Promise<MonthlyBudget[]> => {
+  try {
+    // This would need a custom repository method to include client data
+    // For now, we'll get all budgets and let the frontend handle client lookup
+
+    return await monthlyBudgetRepository.find({
+      relations: ['client'],
+      order: {
+        year: 'DESC',
+        month: 'DESC',
+        createdAt: 'DESC'
+      }
+    });
+  } catch (error) {
+    logger.error(`Error fetch all Clients:`, error);
+    throw error;
+  }
+}
 export default monthlyBudgetRepository;

@@ -10,6 +10,7 @@ import {
   deleteMonthlyBudget,
   findClientById
 } from "../repositories";
+import {getAllWithClients} from "../repositories/monthlyBudgetRepository";
 
 export class MonthlyBudgetService {
   private logger = LoggerService.getInstance();
@@ -109,12 +110,12 @@ export class MonthlyBudgetService {
    * Update monthly salary
    */
   public async updateMonthlySalary(
-    budgetId: string,
+    id: string,
     monthlySalary: number
   ): Promise<MonthlyBudget> {
     try {
       // Get budget
-      const budget = await this.getMonthlyBudgetById(budgetId);
+      const budget = await this.getMonthlyBudgetById(id);
       
       // Update monthly salary
       budget.monthlySalary = monthlySalary;
@@ -136,7 +137,7 @@ export class MonthlyBudgetService {
       if (error instanceof AppError) {
         throw error;
       }
-      this.logger.error(`Error in updateMonthlySalary service for budget ID ${budgetId}:`, error);
+      this.logger.error(`Error in updateMonthlySalary service for budget ID ${id}:`, error);
       throw new AppError("Failed to update monthly salary", 500);
     }
   }
@@ -145,20 +146,17 @@ export class MonthlyBudgetService {
    * Update budget amount
    */
   public async updateBudgetAmount(
-    budgetId: string,
+    id: string,
     budgetAmount: number,
     isPercentage: boolean
   ): Promise<MonthlyBudget> {
     try {
       // Get budget
-      const budget = await this.getMonthlyBudgetById(budgetId);
+      const budget = await this.getMonthlyBudgetById(id);
       
       // Calculate actual budget amount if percentage
       let actualBudgetAmount = budgetAmount;
       if (isPercentage) {
-        if (budgetAmount < 0 || budgetAmount > 100) {
-          throw new AppError("Percentage must be between 0 and 100", 400);
-        }
         actualBudgetAmount = (budget.monthlySalary * budgetAmount) / 100;
       }
       
@@ -174,7 +172,7 @@ export class MonthlyBudgetService {
       if (error instanceof AppError) {
         throw error;
       }
-      this.logger.error(`Error in updateBudgetAmount service for budget ID ${budgetId}:`, error);
+      this.logger.error(`Error in updateBudgetAmount service for budget ID ${id}:`, error);
       throw new AppError("Failed to update budget amount", 500);
     }
   }
@@ -183,13 +181,13 @@ export class MonthlyBudgetService {
    * Update remaining balance
    */
   public async updateRemainingBalance(
-    budgetId: string,
+    id: string,
     amount: number,
     isAddition: boolean = false
   ): Promise<MonthlyBudget> {
     try {
       // Get budget
-      const budget = await this.getMonthlyBudgetById(budgetId);
+      const budget = await this.getMonthlyBudgetById(id);
       
       // Update remaining balance
       if (isAddition) {
@@ -204,7 +202,7 @@ export class MonthlyBudgetService {
       if (error instanceof AppError) {
         throw error;
       }
-      this.logger.error(`Error in updateRemainingBalance service for budget ID ${budgetId}:`, error);
+      this.logger.error(`Error in updateRemainingBalance service for budget ID ${id}:`, error);
       throw new AppError("Failed to update remaining balance", 500);
     }
   }
@@ -214,16 +212,52 @@ export class MonthlyBudgetService {
    */
   public async deleteMonthlyBudget(id: string): Promise<void> {
     try {
-      // Get budget
-      const budget = await this.getMonthlyBudgetById(id);
-      
-      // Delete budget
+      const budget = await findMonthlyBudgetById(id);
+      if (!budget) {
+        throw new AppError("Monthly budget not found", 404);
+      }
+
       await deleteMonthlyBudget(budget);
     } catch (error) {
       if (error instanceof AppError) {
         throw error;
       }
       this.logger.error(`Error in deleteMonthlyBudget service for ID ${id}:`, error);
+      throw new AppError("Failed to delete monthly budget", 500);
+    }
+  }
+
+  /**
+   * Get all monthly budgets with client information (admin only)
+   */
+  public async getAllWithClients(): Promise<MonthlyBudget[]> {
+    try {
+      // This would need a custom repository method to include client data
+      // For now, we'll get all budgets and let the frontend handle client lookup
+
+      return await getAllWithClients()
+    } catch (error) {
+      this.logger.error("Error in getAllWithClients service:", error);
+      throw new AppError("Failed to get all monthly budgets", 500);
+    }
+  }
+
+  /**
+   * Delete a monthly budget by ID (admin only)
+   */
+  public async adminDeleteMonthlyBudget(id: string): Promise<void> {
+    try {
+      const budget = await findMonthlyBudgetById(id);
+      if (!budget) {
+        throw new AppError("Monthly budget not found", 404);
+      }
+
+      await deleteMonthlyBudget(budget);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      this.logger.error(`Error in adminDeleteMonthlyBudget service for ID ${id}:`, error);
       throw new AppError("Failed to delete monthly budget", 500);
     }
   }

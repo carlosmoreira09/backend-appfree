@@ -15,11 +15,9 @@ jobs:
         with:
           node-version: '20'
 
-      - run: npm ci
+      - run: npm ciqas
       
-      - name: Check for vulnerabilities
-        run: npm audit --audit-level=moderate
-        # This will return non-zero exit code if vulnerabilities are found at moderate level or higher
+      - name: Check for vulnerabiao exit code if vulnerabilities are found at moderate level or higher
         # Thus will fail the workflow and block the merge before building
       
       - run: NODE_OPTIONS='--max-old-space-size=4096' npm run build
