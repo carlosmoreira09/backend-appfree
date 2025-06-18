@@ -269,7 +269,6 @@ export class ClientController {
         try {
             // Check for validation errors
             const errors = validationResult(req);
-            console.log(errors)
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
@@ -290,7 +289,6 @@ export class ClientController {
                 maritalStatus,
             } = req.body;
             const password = name.toString().split(' ')[0].toLowerCase() + birthday.toString().split('-')[0].toLowerCase();
-            console.log(password);
             // Use authenticated user as manager if not specified
             const effectiveManagerId = req.userId;
             if (!effectiveManagerId) {
