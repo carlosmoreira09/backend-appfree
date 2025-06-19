@@ -2,9 +2,6 @@ name: Check Build
 
 on:
   pull_request:
-    types: [closed]
-    branches: [main]
-  push:
     branches: [main]
 
 jobs:
@@ -19,10 +16,9 @@ jobs:
           node-version: '20'
 
       - run: npm ci
-
+      
       - name: Check for vulnerabilities
-        run: npm audit --audit-level=moderate
-        # This will return non-zero exit code if vulnerabilities are found at moderate level or higher
-        # Thus will fail the workflow and block the merge before building
-
+        run: npm audit --audit-level moderate
+        continue-on-error: false
+      
       - run: NODE_OPTIONS='--max-old-space-size=4096' npm run build

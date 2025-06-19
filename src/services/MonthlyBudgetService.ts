@@ -263,7 +263,7 @@ export class MonthlyBudgetService {
   }
 
   /**
-   * Get current daily budget status for a client
+   * Get current daily budget status for a client with rolling budget logic
    */
   public async getCurrentDailyBudgetStatus(clientId: string, targetDate?: Date): Promise<{
     dailyBudget: number;
@@ -271,6 +271,8 @@ export class MonthlyBudgetService {
     todaySpent: number;
     todayIncome: number;
     monthlyBudget: MonthlyBudget | null;
+    adjustedDailyBudget: number;
+    previousDayBalance: number;
   }> {
     try {
       // Use provided date or default to current date
@@ -280,21 +282,89 @@ export class MonthlyBudgetService {
       
       // Get or create monthly budget for the specified month
       const monthlyBudget = await this.getOrCreateMonthlyBudget(clientId, year, month);
+      const baseDailyBudget = Number(monthlyBudget.dailyBudget);
       
-      // Set the target day to start of day
+      let previousDayBalance = 0;
+      let adjustedDailyBudget = baseDailyBudget;
+      
+      const { findDailyTransactionsByClientAndDateRange } = await import("../repositories/dailyTransactionRepository");
+      
+      // First, check if this client has ANY transactions at all before the target date
+      const veryEarlyDate = new Date('2020-01-01');
+      const beforeTargetDate = new Date(date);
+      beforeTargetDate.setHours(0, 0, 0, 0);
+      
+      const allPreviousTransactions = await findDailyTransactionsByClientAndDateRange(
+        clientId,
+        veryEarlyDate,
+        beforeTargetDate
+      );
+      
+      // If no transactions exist before target date, this is the first day ever
+      if (allPreviousTransactions.length === 0) {
+        this.logger.info(`First day for client ${clientId} on ${date.toISOString().split('T')[0]}`);
+        previousDayBalance = 0;
+        adjustedDailyBudget = baseDailyBudget;
+      } else {
+        // Client has used the system before - check previous day
+        const previousDay = new Date(date);
+        previousDay.setDate(previousDay.getDate() - 1);
+        
+        // Only calculate previous day balance if it's in the same month and year
+        if (previousDay.getMonth() === date.getMonth() && 
+            previousDay.getFullYear() === date.getFullYear()) {
+          
+          const prevDayStart = new Date(previousDay);
+          prevDayStart.setHours(0, 0, 0, 0);
+          const prevDayEnd = new Date(previousDay);
+          prevDayEnd.setHours(23, 59, 59, 999);
+          
+          const prevDayTransactions = await findDailyTransactionsByClientAndDateRange(
+            clientId,
+            prevDayStart,
+            prevDayEnd
+          );
+          
+          // Calculate previous day's spent and income
+          let prevDaySpent = 0;
+          let prevDayIncome = 0;
+          
+          prevDayTransactions.forEach((transaction) => {
+            if (transaction.type === 'expense') {
+              prevDaySpent += Number(transaction.amount);
+            } else if (transaction.type === 'income') {
+              prevDayIncome += Number(transaction.amount);
+            }
+          });
+          
+          // Calculate previous day's balance (what was left over or deficit)
+          previousDayBalance = baseDailyBudget + prevDayIncome - prevDaySpent;
+          
+          // Adjust current day's budget: base budget + previous day's balance
+          adjustedDailyBudget = baseDailyBudget + previousDayBalance;
+          
+          this.logger.info(`Previous day balance for client ${clientId}: ${previousDayBalance}`);
+        } else {
+          // Different month or year - start fresh
+          this.logger.info(`New month/year for client ${clientId}, starting fresh`);
+          previousDayBalance = 0;
+          adjustedDailyBudget = baseDailyBudget;
+        }
+      }
+      
+      // Get current day's transactions
       const startDate = new Date(date);
       startDate.setHours(0, 0, 0, 0);
       const endDate = new Date(startDate);
       endDate.setDate(endDate.getDate() + 1);
       
-      const { findDailyTransactionsByClientAndDateRange } = await import("../repositories/dailyTransactionRepository");
       const dayTransactions = await findDailyTransactionsByClientAndDateRange(
         clientId,
         startDate,
         endDate
       );
       
-      // Calculate day's spent and income
+      // Calculate current day's spent and income
       let todaySpent = 0;
       let todayIncome = 0;
       
@@ -306,14 +376,21 @@ export class MonthlyBudgetService {
         }
       });
       
-      // Calculate remaining balance for the day
-      const remainingBalance = monthlyBudget.dailyBudget + todayIncome - todaySpent;
+      // Calculate remaining balance using the adjusted daily budget
+      const remainingBalance = adjustedDailyBudget + todayIncome - todaySpent;
+      
+      this.logger.info(`Daily budget status for client ${clientId} on ${date.toISOString().split('T')[0]}: 
+        baseDailyBudget=${baseDailyBudget}, 
+        adjustedDailyBudget=${adjustedDailyBudget}, 
+        previousDayBalance=${previousDayBalance}`);
       
       return {
-        dailyBudget: Number(monthlyBudget.dailyBudget),
+        dailyBudget: baseDailyBudget,
+        adjustedDailyBudget: adjustedDailyBudget,
         remainingBalance: remainingBalance,
         todaySpent: todaySpent,
         todayIncome: todayIncome,
+        previousDayBalance: previousDayBalance,
         monthlyBudget: monthlyBudget
       };
     } catch (error) {
