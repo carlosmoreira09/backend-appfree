@@ -1,13 +1,17 @@
 import { Router } from "express";
 import { DailyTransactionController } from "../controllers/DailyTransactionController";
-import { authMiddleware } from "../middlewares";
+import {authMiddleware, roleMiddleware} from "../middlewares";
+import {RoleType} from "../entities/Role";
 
 const router = Router();
 const dailyTransactionController = new DailyTransactionController();
 
 router.use(authMiddleware);
 router.get("/", dailyTransactionController.getAll);
-router.get("/client/:clientId", [...dailyTransactionController.clientIdValidation], dailyTransactionController.getByClientId);
+router.get("/client/:clientId", [
+    roleMiddleware([RoleType.CLIENT, RoleType.ADMIN]),
+    ...dailyTransactionController.clientIdValidation
+], dailyTransactionController.getByClientId);
 router.get("/client/:clientId/date/:date", [
     ...dailyTransactionController.clientIdValidation,
     ...dailyTransactionController.dateValidation
