@@ -107,22 +107,30 @@ export const roleMiddleware = (roles: string[]) => {
         const logger = LoggerService.getInstance();
         
         try {
-            // Check if user is authenticated
-            if (!req.userId) {
-                throw new AppError("Authentication required", 401);
-            }
+            if (req.clientId) {
+                const client = await findClientById(req.clientId);
+                if (!client) {
+                    throw new AppError("Client not found", 401);
+                }
+                logger.info(`Client validated: ${client.id}`);
+            } else {
+                // Check if user is authenticated
+                if (!req.userId) {
+                    throw new AppError("Authentication required", 401);
+                }
 
-            // Get user with role
-            const user = await findUserById(req.userId);
-            if (!user) {
-                throw new AppError("User not found", 401);
-            }
+                // Get user with role
+                const user = await findUserById(req.userId);
+                if (!user) {
+                    throw new AppError("User not found", 401);
+                }
 
-            // Check if user has required role
-            if (!user.role || !roles.includes(user.role.name)) {
-                throw new AppError("Access denied", 403);
-            }
+                // Check if user has required role
+                if (!user.role || !roles.includes(user.role.name)) {
+                    throw new AppError("Access denied", 403);
+                }
 
+            }
             // Continue to next middleware/route handler
             next();
         } catch (error) {
